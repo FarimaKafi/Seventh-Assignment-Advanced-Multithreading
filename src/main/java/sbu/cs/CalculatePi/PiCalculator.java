@@ -26,7 +26,7 @@ public class PiCalculator {
     public String calculate(int floatingPoint)
     {
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-        BigDecimal pi = BigDecimal.ZERO;
+        final BigDecimal[] pi = {BigDecimal.ZERO};
 
         for (int k = 0; k < 100; k++) {
             int finalK = k;
@@ -34,6 +34,8 @@ public class PiCalculator {
                 BigDecimal term = BigDecimal.valueOf(0);
                 int scale = floatingPoint + 10;
                 int iterationLimit = finalK == 0 ? 1 : (int) Math.pow(2, finalK + 1);
+
+                BigDecimal piThread = pi[0];
 
                 for (int i = 0; i < iterationLimit; i++) {
                     BigDecimal numerator = BigDecimal.valueOf(4).pow(finalK).multiply(BigDecimal.valueOf(8 * i + 1))
@@ -46,7 +48,8 @@ public class PiCalculator {
                     term = term.add(numerator.divide(denominator, scale, BigDecimal.ROUND_HALF_UP));
                 }
 
-                pi = pi.add(term);
+                piThread = piThread.add(term);
+                pi[0] = piThread;
             });
         }
 
@@ -57,10 +60,17 @@ public class PiCalculator {
             e.printStackTrace();
         }
 
-        return pi.setScale(floatingPoint, BigDecimal.ROUND_HALF_UP).toString();
+        return pi[0].setScale(floatingPoint, BigDecimal.ROUND_HALF_UP).toString();
     }
 
     public static void main(String[] args) {
-        // Use the main function to test the code yourself
+        // Create a new instance of PiCalculator
+        PiCalculator piCalculator = new PiCalculator();
+
+        // Call the calculate method with the desired number of floating point digits
+        String pi = piCalculator.calculate(100);
+
+        // Print the result
+        System.out.println(pi);
     }
 }
